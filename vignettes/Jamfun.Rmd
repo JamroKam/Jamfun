@@ -1,0 +1,248 @@
+---
+title: "Jamfun - opis pakietu"
+date:   "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Winieta pakietu Jamfun}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  echo = T, 
+  message = F, 
+  warning = F,
+  comment = "#>"
+)
+```
+
+```{r dodatkowe ustawienia, include=FALSE, results='hide'}
+library(Jamfun)
+```
+
+***
+
+**Kamil Jamroziński**  
+Nr indeksu: 303986
+**e-mail:** *[jamrozin@student.agh.edu.pl](jamrozin@student.agh.edu.pl)*
+
+Akademia Gorniczo-Hutnicza im. Stanislawa Staszica w Krakowie
+Wydział Geodezji Górniczej i Inżynierii Środowiska
+Kierunek: Geoinformacja 
+Rok studiów: III rok
+Semestr studiow: V
+Rok akademicki: 2020/2021
+Przedmiot: Metody inwentaryzacji i szacowania emisji
+
+***
+
+***
+# 1. Wprowadzenie
+***
+
+Pakiet powstal w ramach zajec na studiach z przedmiotu "Metody Inwentaryzacji i Szacowania Emisji". Wsparciem merytorycznym oraz osobą nadzorującą pracę nad projektem jest doktor Mateusz Reszutek.
+
+Pakiet powstał na podstawie raportu "EMEP/EEA air polutanat emission inventory guidbook 2019" autorstwa Eurpoejskiej Agencji Środowiska - EEA.
+
+Pakiet służy do obliczania emisji zanieczyszczeń emitowanych przez pojazdy z silnikami spalinowymi i wizualizacji tych danych. 
+Funkcje pakietu korzystają z danych dołączonych do pakietu.
+Dane w pliku 'wskazniki' sa wcześniej przetworzonymi danymi pochodzacymi z pliku danych:  `1.A.3.b.i-iv Road Transport Appendix 4 Emission Factors 2019.xlsx`, dostarczonego do raportu EEA. Zunifikowany plik zapisano do obiektu danych `wskazniki`. a pakiet dodatkowo korzysta z obiektu `input`.
+
+***
+
+***
+# 2. Instalacja pakietu
+***
+
+Repozytorium danych pakietu zamieszczono na portalu [GitHub](https://github.com/JamroKam). By pakiet działał poprawnie konieczne jest użycie pakietu `devtools`, który pobierze repozytorium `Jamfun` i zainstaluje pakiet na urządzeniu.
+
+```{r setup, eval=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+# pakiet devtools - sprawdzenie czy jest zainstalowany na komputerze, jeśli nie to jest instalowany i wczytany
+if(!require(devtools)) {install.packages("devtools"); require(devtools)}
+
+# instalcja pakietu MIiSEpakietWP
+devtools::install_github("JamroKam/Jamfun")
+library(Jamfun)
+
+```
+
+Poniższe polecenie wywoła w oknie pomocy listę funkcji pakietu oraz ich skrócony opis:
+
+```{r echo=TRUE}
+
+help(package = "Jamfun")
+
+```
+
+Do pełnego, poprawnego działania pakietu zalecne jest wczytanie następujących pakietów:
+
+```{r, results='hide'}
+
+library(dplyr)
+library(magrittr)
+library(qpdf)
+library(utils)
+library(rlang)
+library(stats)
+library(ggplot2)
+library(tidyverse)
+
+```
+
+***
+
+***
+# 3. Dane dostarczone z pakietem
+***
+
+Razem z pakietem dołączono plik 'plikidane.rda' w folderze 'data', w którym znajdują się dane wykorzystywane do obliczeń dla domślnie przyjętych wartości. W ramach funkcji można również korzystać z własnych danych, jednak trzeba mieć na względzie że może to wymagać modyfikacji kodu lub modyfikacj itych danych by funkcja działała poprawnie.
+
+***
+
+***
+## 3.1 Obiekt "Wskazniki"
+***
+
+Plik zawiera dane dostarczone wraz z podrecznikiem, na bazie ktorego stworzono niniejszy pakiet.
+
+Opis danych:
+
+```{r echo=TRUE}
+
+?Jamfun::wskazniki
+
+```
+
+Podglad poczatkowych wierszy obiektu z danymi:
+
+```{r echo=FALSE}
+
+head(Jamfun::wskazniki)
+
+```
+
+W pliku znajduja sie nastepujace kolumny:
+
+```{r echo=FALSE}
+
+colnames(Jamfun::wskazniki)
+
+```
+
+- Category -> rodzaj pojazdu,
+- Fuel -> rodaj paliwa,
+- Segment -> ,
+- Euro.Standard -> standard emisji spalin EEA,
+- Technology -> technologia silnika,
+- Pollutant -> zanieczyszczenie,
+- Mode -> ,
+- Alpha, Beta, Gamma, Delta, Epsilon, Zita, Hta -> zmienna numeryczna,
+- Reduction -> ,
+- Bio (Reduction) -> ,
+- Procent -> ,
+
+***
+
+***
+## 3.2 Obiekt "input"
+***
+
+Obiekt 'input' zawiera dane przykladowe, wykorzystywane do obliczania emisji w funkcji 'oblicz_emisje()'. 
+
+Opis danych:
+
+```{r echo=TRUE}
+
+?Jamfun::input
+
+```
+
+Podglad danych:
+
+```{r echo=FALSE}
+
+head(Jamfun::input)
+
+```
+
+Obiekt zawiera nastepujace kolumny:
+
+```{r echo=FALSE}
+
+colnames(Jamfun::input)
+
+```
+
+- Nat -> natezenie ruchu,
+- Segment -> typ pojazdu,
+- Fuel -> rodzaj plaiwa, ktorym jest napedzany,
+- Technology -> technologia oczyszczania spalin - zmiejszania emisji,
+
+***
+
+***
+# 4. Funkcja "oblicz_emisje()"
+***
+
+Funkcja 'oblicz_emisje()' wyznacza emisje dla podanego obiektu z danymi, bedacego parametrem podawanym na wejsciu. Obicza ja w sposob identyczny jak w arkuszu klakulacyjnym dostarczonym do podrecznika, na bazie ktorego powstal niniejszy pakiet.
+Wartosc emisji obliczana jest w funkcji wg nastepujacych etapow:
+
+- filtracja dancyh z obiektu 'wskazniki' wg parametrow podanych na wejsciu funkcji,
+- polaczenie w jeden, wynikowy obiekt, przefiltrowanych danych i danych wejsciowcych,
+- poprzez funkcje 'mutate' obliczenie dla kazdego wiersza z danymi wielkosci emisji,
+- wybranie najwazniejszych kolumn, w tym kolumny z wynikiem,
+- zwrocenie na koniec dzialania funkcji obiektu wynikowego z danymi.
+
+Dokumntacja funkcji:
+
+```{r echo=TRUE}
+
+?Jamfun::oblicz_emisje()
+
+```
+
+W wyniku dzialania funkcji otrzymujemy obiekt z danymi:
+
+```{r echo=TRUE}
+
+oblicz_emisje() -> tmp
+tmp %>%  glimpse()
+
+```
+
+***
+
+***
+# 5. Funkcja "wizualizuj_emisje()"
+***
+
+Dzieki ninjeszej funkcji mozna wizualizowac dane, m.in. dane dostarczone wraz z pakietem w obiekcie 'wskazniki'. 
+
+Dokumntacja funkcji:
+
+```{r echo=TRUE}
+
+?Jamfun::wizualizuj_emisje()
+
+```
+
+Ponizej przestawiono wykres stworzony przez funkcje, przy domyslnych parametrach:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+wizualizuj_emisje()
+
+```
+
+Funkcja sklada sie z nastepujacych elementow:
+- przypisanie paramertrow - funkcja 'enquo()',
+- sprawdzenie braku dnaych,
+- stworzenie wykresu o podstawowych parametrach i zapisanie go do obiektu,
+- edycja wygladu wykresu poprzez modyfikacje poszczegolnych jego parametrow,
+- zwrocenie gtowego wykrsu bedacego wynikiem dzialania funkcji.
+
+***

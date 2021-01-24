@@ -1,0 +1,42 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# Jamfun
+
+Pakiet stworzony w jezyku programowania R w ramach zajec z przedmiotu "Metody Inwentaryzacji i Szacowania Emisji" przez studenta trzeciego roku kierunku Geoiformacja Kamila Jamrozinskiego.
+
+Pakiet pozwala na wyliczenie emisji pochodzacej z transportu drogowego wedlug sposobu podanego przez Europejska Agensje Srodowiska - EEA.
+Pakiet sklada sie z dwoch funkcji:
+- oblicz_emisje() <- obliczanie emisji na podstawie zalaczonych danych,
+- wizualizuj_emisje() <- wizualizacja tych danych.
+
+## Instalacja z winietą
+
+```{r setup, eval=FALSE}
+# instalacja wymaganego pakietu 'devtools' (jezeli nie zostal pobrany wczesniej)
+if (!require(devtools)) {install.packages("devtools"); require(devtools)}
+
+# instalacja pakietu z GitHub
+install_github("JamroKam/Jamfun", force = T, build_vignettes = T)
+library(Jamfun)
+```
+
+
+## System pomocy
+
+Aby z niego skorzystac nalezy wywolac funkcje:
+```{r, eval=F}
+?"Jamfun"
+```

@@ -1,0 +1,34 @@
+Package: Jamfun
+Title: Pakiet obliczajacy i wuzializujacy emisje wedlug danych EEA
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Kamil",
+           family = "Jamrozinski",
+           role = c("aut", "cre"),
+           email = "jamrozin@student.agh.edu.pl",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Pakiet powstal w ramach zajec z przedmiotu
+    "Metody Inwentaryzacji i Szacowania Emisji" na studiach.
+    Wsparciem merytorycznym oraz osoba nadzorujaca prace
+    nad pakietem jest doktor Mateusz Rzeszutek.
+    Zadaniem pakiety jest obliczenie emisji z transportu
+    drogowego w oparciu o zalaczane razem z pakietem danych,
+    a takze ich wizualizacji.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    magrittr,
+    purrr,
+    qpdf,
+    ggplot2,
+    utils,
+    tidyr,
+    rlang
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown,
+VignetteBuilder: knitr
